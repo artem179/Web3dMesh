@@ -13,19 +13,19 @@
 // var VTX = VTX7;
 
 // === important facial feature 33 points ===
-var VTX = VTX33;
+// var VTX = VTX33;
 
 // === standard facial landmark 68 points ===
 // var VTX = VTX68;
 
 // === full facemesh 468 points ===
-// var VTX = VTX468;
+var VTX = VTX468;
 
 // select the right triangulation based on vertices
 var TRI = VTX == VTX7 ? TRI7 : (VTX == VTX33 ? TRI33 : (VTX == VTX68 ? TRI68 : TRI468))
 var UV  = VTX == VTX7 ? UV7  : (VTX == VTX33 ? UV33  : (VTX == VTX68 ? UV68  : UV468))
 
-var MAX_FACES = 4; //default 10
+var MAX_FACES = 1; //default 10
 
 
 var socket = io(); // the networking library
@@ -258,6 +258,71 @@ function render() {
       socket.emit('client-update',{faces:myFaces});
     })
   }
+
+  video = document.getElementById( 'video' );
+
+  var texture = new THREE.VideoTexture( video );
+
+  var geometry = new THREE.PlaneBufferGeometry( 16, 9 );
+  geometry.scale( 0.5, 0.5, 0.5 );
+  var material = new THREE.MeshBasicMaterial( { map: texture } );
+
+  // var count = 128;
+  // var radius = 32;
+  //
+  // for ( var i = 1, l = count; i <= l; i ++ ) {
+  //
+  //   var phi = Math.acos( - 1 + ( 2 * i ) / l );
+  //   var theta = Math.sqrt( l * Math.PI ) * phi;
+  //
+  //   var mesh = new THREE.Mesh( geometry, material );
+  //   mesh.position.setFromSphericalCoords( radius, phi, theta );
+  //   mesh.lookAt( camera.position );
+  //   scene.add( mesh );
+  //
+  // }
+
+  var mesh = new THREE.Mesh( geometry, material );
+  mesh.position.set(0, 0, -5.);
+  mesh.lookAt( camera.position );
+  scene.add( mesh );
+
+  //window.addEventListener( 'resize', onWindowResize, false );
+
+  //
+
+  if ( navigator.mediaDevices && navigator.mediaDevices.getUserMedia ) {
+
+    var constraints = { video: { width: 1280, height: 720, facingMode: 'user' } };
+
+    navigator.mediaDevices.getUserMedia( constraints ).then( function ( stream ) {
+
+      // apply the stream to the video element used in the texture
+
+      video.srcObject = stream;
+      video.play();
+
+    } ).catch( function ( error ) {
+
+      console.error( 'Unable to access the camera/webcam.', error );
+
+    } );
+
+  } else {
+
+    console.error( 'MediaDevices interface not available.' );
+
+  }
+
+  function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+  }
+
   
   dbg.clearRect(0,0,dbg.canvas.width,dbg.canvas.height);
   
